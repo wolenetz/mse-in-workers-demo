@@ -4,8 +4,10 @@ Demo MSE usage from DedicatedWorker context
 ## Authors:
 * Matt Wolenetz @ Google
 
-## Spec issue for MSE-in-Workers feature
-* https://github.com/w3c/media-source/issues/175
+## References
+* [MSE-in-Workers Spec Issue](https://github.com/w3c/media-source/issues/175)
+* [Explainer](https://github.com/wicg/media-source/blob/mse-in-workers-using-handle/mse-in-workers-using-handle-explainer.md)
+* [Chromium's Implementation-Tracking Issue](https://crbug.com/878133)
 
 ## Usage
 * Using Chromium 88.0.4300.0 or greater, enable the experimental MSE-in-Workers support:
