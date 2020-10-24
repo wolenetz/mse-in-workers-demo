@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>Simple MediaSource-in-Workers Demo</title>
+<script src="media_fetch_util.js"></script>
 <body>
   <div style="width: 100%;" id="top_div"></div>
   <div style="width: 100%;">
@@ -13,8 +14,13 @@
   </div>
 <script>
 
+const MEDIA_URL = "test-5seconds.webm";
+const MEDIA_TYPE = 'video/webm; codecs="vp9"';
+let media_bytes;
+
+const BUSYWAIT_DURATION_MILLISECONDS = 100;
+
 const wait_div = document.getElementById('top_div');
-const busywait_duration_milliseconds = 100;
 let wait_counter = 0;
 let wait_handle;
 let pending_ended_count_before_stopping_busywait = 0;
@@ -23,9 +29,9 @@ function start_busy_waiting() {
   var wait_start = performance.now();
   wait_counter++;
   wait_div.innerText = "Iteration #" + wait_counter + " of busy-waiting " +
-      busywait_duration_milliseconds + " milliseconds on main thread...";
+      BUSYWAIT_DURATION_MILLISECONDS + " milliseconds on main thread...";
 
-  while (performance.now() - wait_start < busywait_duration_milliseconds) {
+  while (performance.now() - wait_start < BUSYWAIT_DURATION_MILLISECONDS) {
     /* busy-wait */
   }
 
@@ -60,6 +66,13 @@ function decrement_pending_ended() {
     stop_busy_waiting();
 }
 
+function start_mse_buffering_in_worker(log_div, video) {
+  // TODO
+}
+
+function start_mse_buffering_in_main(log_div, video) {
+  // TODO
+}
 
 function start_demo_player(div, use_worker) {
   increment_pending_ended();
@@ -99,9 +112,9 @@ function start_demo_player(div, use_worker) {
   }
 
   if (use_worker) {
-    // TODO 
+    start_mse_buffering_in_worker(log_div, video);
   } else {
-    // TODO
+    start_mse_buffering_in_main(log_div, video);
   }
 }
 
