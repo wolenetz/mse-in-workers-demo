@@ -67,7 +67,33 @@ function decrement_pending_ended() {
 }
 
 function start_mse_buffering_in_worker(log_div, video) {
-  // TODO
+  const worker = new Worker('demo-worker.js');  // TODO
+  // TODO install worker.onerror handler.
+
+  // Note, we could just have the worker initiate fetch and buffering
+  // immediately when started, but to help make this demo more reusable
+  // without having to hardcode MEDIA_URL and MEDIA_TYPE in the worker code,
+  // we provide it with that info via an initial message.
+
+  worker.postMessage({ media_url: MEDIA_URL, media_type: MEDIA_TYPE }); // BIG TODO: does this work???
+
+  worker.onmessage = msg => {
+    log(log_div, "Received msg from worker: topic=" + msg.topic + ", arg=" + msg.arg);
+    switch (msg.data.topic) {
+      case 'error':
+        // There was an issue in the worker's use of MSE. The video might already be playing.
+        // Regardless, help ensure the busy-waiting eventually stops since the demo is malfunctioning.
+        decrement_pending_ended();
+        break;
+      case 'objectUrl':
+        video.src = msg.arg;
+        break;
+// TODO send and handle here an 'info' topic
+      default:
+        log(log_div, "error: Unrecognized topic in message from worker");
+        break;
+    }
+  };
 }
 
 function start_mse_buffering_in_main(log_div, video) {
@@ -75,11 +101,20 @@ function start_mse_buffering_in_main(log_div, video) {
 }
 
 function start_demo_player(div, use_worker) {
+  var handled_error = false;
+
   increment_pending_ended();
 
   div.appendChild(document.createElement("hr"));
   const video = document.createElement("video");
   div.appendChild(video);
+  video.play().catch(e => {
+    log(log_div, e);  // TODO: what does this look like?
+    if (!handled_error) {
+      handled_error = true;
+      decrement_pending_ended();
+    }
+  });
 
   const log_div = document.createElement("div");
   div.appendChild(log_div);
@@ -102,7 +137,10 @@ function start_demo_player(div, use_worker) {
     log(log_div,
         "Video Element Error: code=" + video.error.code +
             ", message=" + video.error.message);
-    decrement_pending_ended();
+    if (!handled_error) {
+      handled_error = true;
+      decrement_pending_ended();
+    }
     return;
   }
 
@@ -122,6 +160,7 @@ const main_div = document.getElementById('left_div');
 const worker_div = document.getElementById('right_div');
 
 // TODO parameterize? (maybe URL and buttons)
+// TODO do these in the scope of a user-interaction to preserve token enabling play to start without having to disable user gesture requirement.
 start_demo_player(main_div, false /* don't use_worker */);
 start_demo_player(worker_div, true   /* do use_worker */);
 
