@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Simple MediaSource-in-Workers Demo</title>
+<body>
+  <div style="width: 100%;" id="top_div"></div>
+  <div style="width: 100%;">
+    <div style="width: 50%; float: left;" id="left_div">
+      <br><hr><b>MSE usage on main thread</b>
+    </div>
+    <div style="margin-left: 50%;" id="right_div">
+      <br><hr><b>MSE usage in worker thread (with video element on main thread)</b>
+    </div>
+  </div>
+<script>
+
+const wait_div = document.getElementById('top_div');
+const busywait_duration_milliseconds = 100;
+let wait_counter = 0;
+let wait_handle;
+let pending_ended_count_before_stopping_busywait = 0;
+
+function start_busy_waiting() {
+  var wait_start = performance.now();
+  wait_counter++;
+  wait_div.innerText = "Iteration #" + wait_counter + " of busy-waiting " +
+      busywait_duration_milliseconds + " milliseconds on main thread...";
+
+  while (performance.now() - wait_start < busywait_duration_milliseconds) {
+    /* busy-wait */
+  }
+
+  wait_div.innerText += "done";
+  wait_handle = setTimeout(start_busy_waiting, 0);
+}
+
+function stop_busy_waiting() {
+  if (wait_handle != undefined) {
+    clearTimeout(wait_handle);
+    wait_handle = undefined;
+    wait_div.innerText = "All players have ended or errored. Stopped busy-waiting on main thread.";
+  }
+}
+
+function log(log_div, entry) {
+  let span = document.createElement("span");
+  span.innerHTML = entry + "<br>";
+  log_div.appendChild(span);
+}
+
+function increment_pending_ended() {
+  if (pending_ended_count_before_stopping_busywait == 0)
+    start_busy_waiting();
+
+  pending_ended_count_before_stopping_busywait++;
+}
+
+function decrement_pending_ended() {
+  pending_ended_count_before_stopping_busywait--;
+  if (pending_ended_count_before_stopping_busywait <= 0)
+    stop_busy_waiting();
+}
+
+
+function start_demo_player(div, use_worker) {
+  increment_pending_ended();
+
+  div.appendChild(document.createElement("hr"));
+  const video = document.createElement("video");
+  div.appendChild(video);
+
+  const log_div = document.createElement("div");
+  div.appendChild(log_div);
+  log(log_div, "Starting demo of MSE " +
+                   (use_worker ? " usage from worker" :
+                                 " usage from main thread"));
+
+  if (window.MediaSource == undefined) {
+    log(log_div, "Error: MediaSource API is unavailable from main/Window context.");
+    return;
+  }
+
+  if (use_worker && (!MediaSource.hasOwnProperty("canConstructInDedicatedWorker") ||
+                     MediaSource.canConstructInDedicatedWorker !== true)) {
+    log(log_div, "Error: MediaSource API is unavailable from DedicatedWorker context.");
+    return;
+  }
+
+  video.onerror = () => {
+    log(log_div,
+        "Video Element Error: code=" + video.error.code +
+            ", message=" + video.error.message);
+    decrement_pending_ended();
+    return;
+  }
+
+  video.onended = () => {
+    log(log_div, "Video Element 'ended'");
+    decrement_pending_ended();
+  }
+
+  if (use_worker) {
+    // TODO 
+  } else {
+    // TODO
+  }
+}
+
+const main_div = document.getElementById('left_div');
+const worker_div = document.getElementById('right_div');
+
+// TODO parameterize? (maybe URL and buttons)
+start_demo_player(main_div, false /* don't use_worker */);
+start_demo_player(worker_div, true   /* do use_worker */);
+
+</script>
+</body>
