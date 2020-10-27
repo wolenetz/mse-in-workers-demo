@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>Simple MediaSource-in-Workers Demo</title>
-<script src="media_fetch_util.js"></script>
+<script src="mse-in-workers-util.js"></script>
 <body>
-  <div style="width: 100%;" id="top_div"></div>
+  <button id="start-button" onclick="start_demo_players()">Start demo</button>
+  <div style="width: 100%;" id="top_div">Awaiting start</div>
   <div style="width: 100%;">
     <div style="width: 50%; float: left;" id="left_div">
       <br><hr><b>MSE usage on main thread</b>
@@ -16,17 +17,23 @@
 
 const MEDIA_URL = "test-5seconds.webm";
 const MEDIA_TYPE = 'video/webm; codecs="vp9"';
-let media_bytes;
+// Demo is able to show more effectively the main vs worker difference when buffering tiny chunks at a time.
+const APPEND_SIZE = 1024;
 
 const BUSYWAIT_DURATION_MILLISECONDS = 100;
 
-const wait_div = document.getElementById('top_div');
+const start_button = document.getElementById("start-button");
+start_button.style.backgroundColor = "white";
+
+const main_div = document.getElementById('left_div');
+const worker_div = document.getElementById('right_div');
+const wait_div = document.getElementById("top_div");
 let wait_counter = 0;
 let wait_handle;
 let pending_ended_count_before_stopping_busywait = 0;
 
 function start_busy_waiting() {
-  var wait_start = performance.now();
+  let wait_start = performance.now();
   wait_counter++;
   wait_div.innerText = "Iteration #" + wait_counter + " of busy-waiting " +
       BUSYWAIT_DURATION_MILLISECONDS + " milliseconds on main thread...";
@@ -75,7 +82,7 @@ function start_mse_buffering_in_worker(log_div, video) {
   // without having to hardcode MEDIA_URL and MEDIA_TYPE in the worker code,
   // we provide it with that info via an initial message.
 
-  worker.postMessage({ media_url: MEDIA_URL, media_type: MEDIA_TYPE }); // BIG TODO: does this work???
+  worker.postMessage({ media_url: MEDIA_URL, media_type: MEDIA_TYPE, append_size: APPEND_SIZE }); // BIG TODO: does this work???
 
   worker.onmessage = msg => {
     log(log_div, "Received msg from worker: topic=" + msg.topic + ", arg=" + msg.arg);
@@ -93,28 +100,36 @@ function start_mse_buffering_in_worker(log_div, video) {
         log(log_div, "error: Unrecognized topic in message from worker");
         break;
     }
+    return;
   };
+
+// TODO: replace this:
+return Promise.resolve();
 }
 
 function start_mse_buffering_in_main(log_div, video) {
-  // TODO
+  let media_source = new MediaSource();
+  let object_url = URL.createObjectURL(media_source);
+  video.src = object_url;
+  return Promise.all([
+      // Let playback start when ready.
+      video.play(),
+
+      // Meanwhile, begin fetching and appending.
+      fetch_and_append_in_chunks(media_source,
+        MEDIA_URL,
+        MEDIA_TYPE,
+        APPEND_SIZE,
+        object_url /* sourceopen handler in utility script will revoke this url */,
+        logmsg => { log(log_div, logmsg); })
+    ]);
 }
 
 function start_demo_player(div, use_worker) {
-  var handled_error = false;
-
-  increment_pending_ended();
-
   div.appendChild(document.createElement("hr"));
   const video = document.createElement("video");
   div.appendChild(video);
-  video.play().catch(e => {
-    log(log_div, e);  // TODO: what does this look like?
-    if (!handled_error) {
-      handled_error = true;
-      decrement_pending_ended();
-    }
-  });
+  video.load();
 
   const log_div = document.createElement("div");
   div.appendChild(log_div);
@@ -122,14 +137,19 @@ function start_demo_player(div, use_worker) {
                    (use_worker ? " usage from worker" :
                                  " usage from main thread"));
 
+  let handled_decrement = false;
+  increment_pending_ended();
+
   if (window.MediaSource == undefined) {
     log(log_div, "Error: MediaSource API is unavailable from main/Window context.");
+    decrement_pending_ended();
     return;
   }
 
   if (use_worker && (!MediaSource.hasOwnProperty("canConstructInDedicatedWorker") ||
                      MediaSource.canConstructInDedicatedWorker !== true)) {
     log(log_div, "Error: MediaSource API is unavailable from DedicatedWorker context.");
+    decrement_pending_ended();
     return;
   }
 
@@ -137,8 +157,8 @@ function start_demo_player(div, use_worker) {
     log(log_div,
         "Video Element Error: code=" + video.error.code +
             ", message=" + video.error.message);
-    if (!handled_error) {
-      handled_error = true;
+    if (!handled_decrement) {
+      handled_decrement = true;
       decrement_pending_ended();
     }
     return;
@@ -146,23 +166,40 @@ function start_demo_player(div, use_worker) {
 
   video.onended = () => {
     log(log_div, "Video Element 'ended'");
-    decrement_pending_ended();
+    if (!handled_decrement) {
+      handled_decrement = true;
+      decrement_pending_ended();
+    }
+    return;
   }
 
+  let player_promise;
   if (use_worker) {
-    start_mse_buffering_in_worker(log_div, video);
+    player_promise = start_mse_buffering_in_worker(log_div, video);
   } else {
-    start_mse_buffering_in_main(log_div, video);
+    player_promise = start_mse_buffering_in_main(log_div, video);
   }
+
+  player_promise.catch(e => {
+    if (!handled_decrement) {
+      handled_decrement = true;
+      decrement_pending_ended();
+    }
+    log(log_div, e);
+    return;
+  });
 }
 
-const main_div = document.getElementById('left_div');
-const worker_div = document.getElementById('right_div');
-
-// TODO parameterize? (maybe URL and buttons)
-// TODO do these in the scope of a user-interaction to preserve token enabling play to start without having to disable user gesture requirement.
-start_demo_player(main_div, false /* don't use_worker */);
-start_demo_player(worker_div, true   /* do use_worker */);
+// We use a button's onclick to start the demo to satisfy autoplay user gesture requirement.
+function start_demo_players() {
+  start_button.onclick="";
+  start_button.style.backgroundColor = "gray";
+  start_button.innerText="Starting";
+  wait_div.innerText="";
+  start_demo_player(main_div, false /* don't use_worker */);
+  start_demo_player(worker_div, true   /* do use_worker */);
+  start_button.innerText="Started";
+}
 
 </script>
 </body>
