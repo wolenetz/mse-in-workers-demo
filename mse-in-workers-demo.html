@@ -3,14 +3,16 @@
 <title>Simple MediaSource-in-Workers Demo</title>
 <script src="mse-in-workers-util.js"></script>
 <body>
-  <button id="start-button" onclick="start_demo_players()">Start demo</button>
-  <div style="width: 100%;" id="top_div">Awaiting start</div>
+  <button id="start-button" onclick="start_demo_players()"></button>
+  <div style="width: 100%;" id="top_div">Initializing</div>
   <div style="width: 100%;">
-    <div style="width: 50%; float: left;" id="left_div">
+    <div style="width: 50%; float: left;">
       <br><hr><b>MSE usage on main thread</b>
+      <div id="left_div"></div>
     </div>
-    <div style="margin-left: 50%;" id="right_div">
+    <div style="margin-left: 50%;">
       <br><hr><b>MSE usage in worker thread (with video element on main thread)</b>
+      <div id="right_div"></div>
     </div>
   </div>
 <script>
@@ -18,15 +20,15 @@
 const MEDIA_URL = "test-5seconds.webm";
 const MEDIA_TYPE = 'video/webm; codecs="vp9"';
 // Demo is able to show more effectively the main vs worker difference when buffering tiny chunks at a time.
-const APPEND_SIZE = 1024;
+const APPEND_SIZE = 512;
 
-const BUSYWAIT_DURATION_MILLISECONDS = 100;
+const BUSYWAIT_DURATION_MILLISECONDS = 500;
 
-const start_button = document.getElementById("start-button");
-start_button.style.backgroundColor = "white";
+const button = document.getElementById("start-button");
+button.style.backgroundColor = "white";
 
-const main_div = document.getElementById('left_div');
-const worker_div = document.getElementById('right_div');
+const main_div = document.getElementById("left_div");
+const worker_div = document.getElementById("right_div");
 const wait_div = document.getElementById("top_div");
 let wait_counter = 0;
 let wait_handle;
@@ -50,6 +52,7 @@ function stop_busy_waiting() {
   if (wait_handle != undefined) {
     clearTimeout(wait_handle);
     wait_handle = undefined;
+    wait_counter = 0;
     wait_div.innerText = "All players have ended or errored. Stopped busy-waiting on main thread.";
   }
 }
@@ -68,43 +71,59 @@ function increment_pending_ended() {
 }
 
 function decrement_pending_ended() {
-  pending_ended_count_before_stopping_busywait--;
-  if (pending_ended_count_before_stopping_busywait <= 0)
-    stop_busy_waiting();
+  if (pending_ended_count_before_stopping_busywait > 0) {
+    pending_ended_count_before_stopping_busywait--;
+    if (pending_ended_count_before_stopping_busywait <= 0)
+      stop_busy_waiting();
+  }
 }
 
+let worker;
 function start_mse_buffering_in_worker(log_div, video) {
-  const worker = new Worker('demo-worker.js');  // TODO
-  // TODO install worker.onerror handler.
-
-  // Note, we could just have the worker initiate fetch and buffering
-  // immediately when started, but to help make this demo more reusable
-  // without having to hardcode MEDIA_URL and MEDIA_TYPE in the worker code,
-  // we provide it with that info via an initial message.
-
-  worker.postMessage({ media_url: MEDIA_URL, media_type: MEDIA_TYPE, append_size: APPEND_SIZE }); // BIG TODO: does this work???
-
-  worker.onmessage = msg => {
-    log(log_div, "Received msg from worker: topic=" + msg.topic + ", arg=" + msg.arg);
-    switch (msg.data.topic) {
-      case 'error':
-        // There was an issue in the worker's use of MSE. The video might already be playing.
-        // Regardless, help ensure the busy-waiting eventually stops since the demo is malfunctioning.
+  return new Promise((resolve, reject) => {
+    let handled_error = false;
+    worker = new Worker("demo-worker.js");
+    worker.onerror = (e) => {
+      log(log_div, "Error event from worker: message='" + e.message + "', filename=" + e.filename + ", lineno=" + e.lineno);
+      if (!handled_error) { 
+        handled_error = true;
         decrement_pending_ended();
-        break;
-      case 'objectUrl':
-        video.src = msg.arg;
-        break;
-// TODO send and handle here an 'info' topic
-      default:
-        log(log_div, "error: Unrecognized topic in message from worker");
-        break;
-    }
-    return;
-  };
+      }
+      log(log_div, "Terminating worker due to error");
+      worker.terminate();
+      worker.onerror = undefined;
+      worker.onmessage = undefined;
+      worker = undefined;
+      reject(e);
+      return;
+    };
 
-// TODO: replace this:
-return Promise.resolve();
+    // Note, we could just have the worker initiate fetch immediately
+    // when started (though still await sourceopen to begin buffering),
+    // but to help make this demo more reusable without having to hardcode
+    // MEDIA_URL and MEDIA_TYPE in the worker code, we provide it with
+    // that info via an initial message.
+    worker.postMessage({ media_url: MEDIA_URL, media_type: MEDIA_TYPE, append_size: APPEND_SIZE });
+
+    worker.onmessage = msg => {
+      // For debugging:
+      // log(log_div, "Received msg from worker: topic=" + msg.data.topic + ", arg=" + msg.data.arg);
+      switch (msg.data.topic) {
+        case "objectUrl":
+          log(log_div, "received objectUrl from worker: " + msg.data.arg + ", setting video src attr");
+          video.src = msg.data.arg;
+          video.play().then(resolve).catch(e => reject(e));
+          break;
+        case "info":
+          log(log_div, "info message from worker: " + msg.data.arg);
+          break;
+        default:
+          log(log_div, "error: Unrecognized topic in message from worker");
+          break;
+      }
+      return;
+    };
+  });
 }
 
 function start_mse_buffering_in_main(log_div, video) {
@@ -125,9 +144,15 @@ function start_mse_buffering_in_main(log_div, video) {
     ]);
 }
 
+let main_video_tag;
+let worker_video_tag;
+
 function start_demo_player(div, use_worker) {
+  div.innerText="";
   div.appendChild(document.createElement("hr"));
   const video = document.createElement("video");
+  video.style.width = "100%";
+  video.controls = true;
   div.appendChild(video);
   video.load();
 
@@ -175,8 +200,10 @@ function start_demo_player(div, use_worker) {
 
   let player_promise;
   if (use_worker) {
+    worker_video_tag = video;
     player_promise = start_mse_buffering_in_worker(log_div, video);
   } else {
+    main_video_tag = video;
     player_promise = start_mse_buffering_in_main(log_div, video);
   }
 
@@ -192,14 +219,56 @@ function start_demo_player(div, use_worker) {
 
 // We use a button's onclick to start the demo to satisfy autoplay user gesture requirement.
 function start_demo_players() {
-  start_button.onclick="";
-  start_button.style.backgroundColor = "gray";
-  start_button.innerText="Starting";
+  updateButton("Starting", "", "gray");
   wait_div.innerText="";
   start_demo_player(main_div, false /* don't use_worker */);
   start_demo_player(worker_div, true   /* do use_worker */);
-  start_button.innerText="Started";
+  updateButton("Stop", stop_demo_players, "white");
 }
+
+function stop_demo_players() {
+  if (main_video_tag != undefined) {
+    main_video_tag.removeAttribute("src");
+    main_video_tag.load();
+    main_video_tag = undefined;
+    log(main_div, "Stopped MSE usage on main thread demo");
+  }
+  if (worker != undefined) {
+    log(worker_div, "Terminating the worker context");
+    worker.terminate();
+    worker.onerror = undefined;
+    worker.onmessage = undefined;
+    worker = undefined;
+  }
+  if (worker_video_tag != undefined) {
+    worker_video_tag.removeAttribute("src");
+    worker_video_tag.load();
+    worker_video_tag = undefined;
+    log(worker_div, "Stopped MSE usage in worker thread demo");
+  }
+
+  // Play promise rejection handling and MediaSource API usage after being
+  // closed can also stop the busy-waiting. decrement_pending_ended() takes
+  // care not to over-decrement. This is just a catch-all to ensure busy-waiting
+  // stops.
+  while (pending_ended_count_before_stopping_busywait > 0)
+    decrement_pending_ended();
+
+  updateButton("Start Demo", start_demo_players, "white");
+}
+
+function updateButton(label, onclick, color) {
+  button.innerText = label;
+  button.onclick = onclick;
+  button.style.backgroundColor = color;
+}
+
+updateButton("Start Demo", start_demo_players, "white");
+wait_div.innerText="Awaiting Start";
+
+// TODO:
+// Check code-style: function naming
+// Add URL parameterization: appendsize, media-url, type, which (default both) of main/mse elements to start?
 
 </script>
 </body>
