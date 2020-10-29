@@ -12,7 +12,7 @@ Demo MSE usage from DedicatedWorker context
 ## Demo description
 
 * Demonstration of how usage of Media Source Extensions API from a dedicated
-  worker context can avoid "buffering jank" when then main window context is
+  worker context can avoid "buffering jank" when the main window context is
   very busy, even though the media element playing the buffered media is still
   on that main thread.
 * Presents a side-by-side comparison of two players, one fetching and buffering
