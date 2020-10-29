@@ -4,7 +4,7 @@ const MEDIA_URL = 'test-5seconds.webm';
 const MEDIA_TYPE = 'video/webm; codecs="vp9"';
 // Demo is able to show more effectively the main vs worker difference when
 // buffering tiny chunks at a time.
-const APPEND_SIZE = 1024;
+const APPEND_SIZE = 512;
 const BUSYWAIT_DURATION_MILLISECONDS = 800;
 
 // End of demo parameters.

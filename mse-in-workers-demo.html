@@ -25,7 +25,7 @@
     <p>A scenario where the main thread is under heavy contention is achieved
     by frequently busy-waiting on it while both players are fetching, buffering
     and playing. Furthermore, asynchronous appendBuffer operations are
-    performed (on each of the main and worker MSE demos) in msall chunks to
+    performed (on each of the main and worker MSE demos) in small chunks to
     enable rapid appearance of "buffering jank" on the player being buffered
     via MSE on the main thread versus a much better experience on the player
     being buffered via MSE on the worker thread, even if the media stream is
