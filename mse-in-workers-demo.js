@@ -1,15 +1,11 @@
-// Customize the demo parameters here:
-
+// Customize the demo media here:
 const MEDIA_URL = 'test-5seconds.webm';
 const MEDIA_TYPE = 'video/webm; codecs="vp9"';
-// Demo is able to show more effectively the main vs worker difference when
-// buffering tiny chunks at a time.
-const APPEND_SIZE = 512;
-const BUSYWAIT_DURATION_MILLISECONDS = 800;
+const DEFAULT_APPEND_SIZE_CLASS_SELECTOR = '.append-512';
+const DEFAULT_BUSYWAIT_DURATION_CLASS_SELECTOR = '.busywait-800';
+// End of demo customization.
 
-// End of demo parameters.
-
-// See onload for initialization of these element references.
+// See onload() for initialization of these element references.
 let button;
 let main_div;
 let worker_div;
@@ -22,13 +18,28 @@ let worker;
 let main_video_tag;
 let worker_video_tag;
 
+// Radio buttons update these parameters for the next demo start. Their default
+// selections are set in onload()'s call to populateParametersTable(). Their
+// current values are fetched and used at the beginning of
+// startBothDemoPlayers() for that instance of the demo run.
+let configured_append_size;
+function updateConfiguredAppendSize() {
+  configured_append_size = parseInt(
+      document.querySelector('input[name=append-size]:checked').value, 10);
+}
+let configured_busywait_duration_milliseconds;
+function updateConfiguredBusywaitDuration() {
+  configured_busywait_duration_milliseconds = parseInt(
+      document.querySelector('input[name=busywait-duration]:checked').value, 10);
+}
+
 function startBusyWaiting() {
   let wait_start = performance.now();
   wait_counter++;
   wait_div.innerText = 'Iteration #' + wait_counter + ' of busy-waiting ' +
-      BUSYWAIT_DURATION_MILLISECONDS + ' milliseconds on main thread...';
+      configured_busywait_duration_milliseconds + ' milliseconds on main thread...';
 
-  while (performance.now() - wait_start < BUSYWAIT_DURATION_MILLISECONDS) {
+  while (performance.now() - wait_start < configured_busywait_duration_milliseconds) {
     /* busy-wait */
   }
 
@@ -97,7 +108,7 @@ function startMseBufferingInWorker(log_div, video) {
     worker.postMessage({
       media_url: MEDIA_URL,
       media_type: MEDIA_TYPE,
-      append_size: APPEND_SIZE
+      append_size: configured_append_size
     });
 
     worker.onmessage = msg => {
@@ -136,7 +147,7 @@ function startMseBufferingInMain(log_div, video) {
 
     // Meanwhile, begin fetching and appending.
     whenSourceOpenedThenFetchAndAppendInChunks(
-        media_source, MEDIA_URL, MEDIA_TYPE, APPEND_SIZE,
+        media_source, MEDIA_URL, MEDIA_TYPE, configured_append_size,
         object_url /* sourceopen handler in utility script will revoke this url
                     */
         ,
@@ -232,6 +243,11 @@ function startDemoPlayer(div, use_worker) {
 function startBothDemoPlayers() {
   updateButton('Starting', '', 'gray');
   wait_div.innerText = '';
+
+  // Obtain the current configuration for this lifetime of players.
+  updateConfiguredAppendSize();
+  updateConfiguredBusywaitDuration();
+
   startDemoPlayer(main_div, false /* don't use_worker */);
   startDemoPlayer(worker_div, true /* do use_worker */);
   updateButton('Stop', stopDemoPlayers, 'white');
@@ -277,9 +293,9 @@ function updateButton(label, onclick, color) {
 function populateParametersTable() {
   document.querySelector('.media-url').innerText = MEDIA_URL;
   document.querySelector('.media-type').innerText = MEDIA_TYPE;
-  document.querySelector('.append-size').innerText = APPEND_SIZE;
-  document.querySelector('.busywait-duration').innerText =
-      BUSYWAIT_DURATION_MILLISECONDS;
+
+  document.querySelector(DEFAULT_APPEND_SIZE_CLASS_SELECTOR).checked = true;
+  document.querySelector(DEFAULT_BUSYWAIT_DURATION_CLASS_SELECTOR).checked = true;
 }
 
 window.onload = () => {
