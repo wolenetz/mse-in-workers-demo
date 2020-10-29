@@ -1,4 +1,4 @@
-# MediaSource-in-Workers Demo
+# MediaSource in Workers Demo
 Demo MSE usage from DedicatedWorker context
 
 ## Authors:
