@@ -9,21 +9,6 @@ Demo MSE usage from DedicatedWorker context
 * [Explainer](https://github.com/wicg/media-source/blob/mse-in-workers-using-handle/mse-in-workers-using-handle-explainer.md)
 * [Chromium's Implementation-Tracking Issue](https://crbug.com/878133)
 
-## Usage
-* Using Chromium 88.0.4300.0 or greater, enable the experimental MSE-in-Workers
-  support:
-  * with cmdline option `--enable-experimental-web-platform-features`
-  * or enable via `chrome://flags/#enable-experimental-web-platform-features`:
-    select `Enabled` and then `Relaunch`
-* Clone this repo and host its contents in a sandbox webserver.
-* Try the demo by navigating to the `mse-in-workers-demo.html` page on your
-  server.
-
-## Test Media
-Created `test-5seconds.webm` using the following:
-
-`ffmpeg -f lavfi -i testsrc=duration=5:size=1920x1080:rate=30 test-5seconds.webm`
-
 ## Demo description
 
 * Demonstration of how usage of Media Source Extensions API from a dedicated
@@ -56,3 +41,18 @@ Created `test-5seconds.webm` using the following:
   Window context is under high contention. This is because that element (and its
   controls) can only execute on the Window context and their event handlers can
   have high scheduling latency.
+
+## Usage
+* Using Chromium 88.0.4300.0 or greater, enable the experimental MSE-in-Workers
+  support:
+  * with cmdline option `--enable-experimental-web-platform-features`
+  * or enable via `chrome://flags/#enable-experimental-web-platform-features`:
+    select `Enabled` and then `Relaunch`
+* Clone this repo and host its contents in a sandbox webserver.
+* Try the demo by navigating to the `mse-in-workers-demo.html` page on your
+  server.
+
+## Test Media
+Created `test-5seconds.webm` using the following:
+
+`ffmpeg -f lavfi -i testsrc=duration=5:size=1920x1080:rate=30 test-5seconds.webm`
