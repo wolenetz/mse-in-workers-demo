@@ -4,7 +4,7 @@ let media_url;
 let media_type;
 let append_size;
 
-function log_to_main(msg) {
+function logToMain(msg) {
   postMessage({topic: 'info', arg: msg});
 }
 
@@ -15,7 +15,7 @@ onmessage = (e) => {
   media_type = e.data.media_type;
   append_size = e.data.append_size;
 
-  log_to_main(
+  logToMain(
       'media_url=' + media_url + ', media_type=' + media_type +
       ',append_size=' + append_size);
   let media_source = new MediaSource();
@@ -28,12 +28,12 @@ onmessage = (e) => {
 
   // Install the sourceopen handler, fetch the media, create a
   // SourceBuffer, and buffer the media into it in tiny chunks.
-  fetch_and_append_in_chunks(
+  whenSourceOpenedThenFetchAndAppendInChunks(
       media_source, media_url, media_type, append_size,
       object_url /* sourceopen handler in utility script will revoke this url */
       ,
       logmsg => {
-        log_to_main(logmsg);
+        logToMain(logmsg);
       });
 
   return;

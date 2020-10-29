@@ -2,7 +2,7 @@
 // the demo's video elements, so makes no reliance upon DOM since it could
 // be used by either main window context or dedicated worker.
 
-function load_binary_async(url) {
+function loadBinaryAsync(url) {
   return new Promise((resolve, reject) => {
     let request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -59,7 +59,7 @@ async function appendChunk(source_buffer, chunk, advance_to_next_chunk_cb) {
   });
 }
 
-async function fetch_and_append_in_chunks(
+async function whenSourceOpenedThenFetchAndAppendInChunks(
     media_source, media_url, media_type, append_size, object_url_to_revoke,
     log_cb) {
   return new Promise((resolve, reject) => {
@@ -73,7 +73,7 @@ async function fetch_and_append_in_chunks(
       log_cb('Handling sourceopen event');
       URL.revokeObjectURL(object_url_to_revoke);
       log_cb('Fetching ' + media_url);
-      load_binary_async(media_url)
+      loadBinaryAsync(media_url)
           .then(async media_bytes => {
             log_cb('Fetched ' + media_bytes.length + ' media bytes');
             let source_buffer = media_source.addSourceBuffer(media_type);

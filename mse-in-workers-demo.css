@@ -1,0 +1,22 @@
+div.players {
+  width: 100%;
+}
+div.worker {
+ /* margin-left: 50%;*/
+  width: 50%;
+  float: right;
+}
+div.main {
+  width: 50%;
+  float: left;
+}
+button.start-stop {
+  background-color: white;
+}
+div.top {
+  width: 100%;
+}
+div.player {
+  width: 100%;
+}
+
