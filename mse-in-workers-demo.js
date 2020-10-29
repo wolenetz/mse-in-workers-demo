@@ -1,9 +1,13 @@
+// Customize the demo parameters here:
+
 const MEDIA_URL = 'test-5seconds.webm';
 const MEDIA_TYPE = 'video/webm; codecs="vp9"';
 // Demo is able to show more effectively the main vs worker difference when
 // buffering tiny chunks at a time.
 const APPEND_SIZE = 1024;
 const BUSYWAIT_DURATION_MILLISECONDS = 100;
+
+// End of demo parameters.
 
 // See onload for initialization of these element references.
 let button;
@@ -270,17 +274,21 @@ function updateButton(label, onclick, color) {
   button.style.backgroundColor = color;
 }
 
+function populateParametersTable() {
+  document.querySelector('.media-url').innerText = MEDIA_URL;
+  document.querySelector('.media-type').innerText = MEDIA_TYPE;
+  document.querySelector('.append-size').innerText = APPEND_SIZE;
+  document.querySelector('.busywait-duration').innerText =
+      BUSYWAIT_DURATION_MILLISECONDS;
+}
+
 window.onload = () => {
   button = document.querySelector('.start-stop');
   main_div = document.querySelector('div.main .player');
   worker_div = document.querySelector('div.worker .player');
   wait_div = document.querySelector('.top');
+  populateParametersTable();
   updateButton('Start Demo', startBothDemoPlayers, 'white');
   wait_div.innerText = 'Awaiting Start';
   return;
 };
-
-// TODO:
-// Check code-style: function naming
-// Add URL parameterization: appendsize, media-url, type, which (default both)
-// of main/mse elements to start?

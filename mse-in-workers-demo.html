@@ -7,8 +7,62 @@
   <script src="mse-in-workers-demo.js"></script>
 </head>
 <body>
+  <b>MSE-in-Workers Demo</b>
   <button class="start-stop"></button>
   <div class="top">Loading</div>
+  <div class="instructions">
+    <p>Demonstration of how usage of Media Source Extensions API from a
+    dedicated worker context can avoid "buffering jank" when then main window
+    context is very busy, even though the media element playing the buffered
+    media is still on that main thread.
+    <p>A side-by-side comparison of two players, one fetching and buffering to
+    its media element solely on the main window context, and the other player
+    relying on a dynamically created dedicated worker to fetch and buffer the
+    same media into a MediaSource owned by that worker's context, yet attached
+    to the main window context's media element via the otherwise normal
+    MediaSource object URL. This demo communicates that URL to the main window
+    context to accomplish the attachment.
+    <p>A scenario where the main thread is under heavy contention is achieved
+    by frequently busy-waiting on it while both players are fetching, buffering
+    and playing. Furthermore, asynchronous appendBuffer operations are
+    performed (on each of the main and worker MSE demos) in msall chunks to
+    enable rapid appearance of "buffering jank" on the player being buffered
+    via MSE on the main thread versus a much better experience on the player
+    being buffered via MSE on the worker thread, even if the media stream is
+    short.
+    <p>To try in Chromium, use 88.0.4300.0 or greater. As of this demo's
+    creation circa that Chromium version, the "MSE-in-Workers" feature is
+    behind an experimental flag in Chromium. Enable with cmdline option
+    "--enable-experimental-web-platform-features" or navigate to
+    chrome://flags/#enable-experimental-web-platform-features, enable it,
+    relaunch and then reload this demo to see it in action.
+    <p>Use the button, above, to get started.
+    <p>See <a href="https://github.com/wolenetz/mse-in-workers-demo/">the
+      demo's github page for more information.</a> 
+  </div>
+  <div class="parameters">
+    <table>
+      <tr>
+        <td colspan=2><b>Demo parameters (hard-coded at top of mse-in-workers-demo.js)</b></td>
+      </tr>
+      <tr>
+        <td>Media URL (to fetch completely, then append in chunks) :</td>
+        <td class="media-url"></td>
+      </tr>
+      <tr>
+        <td>Media type :</td>
+        <td class="media-type"></td>
+      </tr>
+      <tr>
+        <td>Chunk append size :</td>
+        <td class="append-size"></td>
+      </tr>
+      <tr>
+        <td>Busy-wait duration (milliseconds) :</td>
+        <td class="busywait-duration"></td>
+      </tr>
+    </table>
+  </div>
   <div class="players">
     <div class="main">
       <br><hr><b>MSE usage on main thread</b>
