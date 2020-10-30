@@ -8,54 +8,17 @@
 </head>
 <body>
   <b>MSE-in-Workers Demo</b>
-  <div class="instructions">
-    <p>Demonstration of how usage of Media Source Extensions API from a
-    dedicated worker context can avoid "buffering jank" when the main window
-    context is very busy, even though the media element playing the buffered
-    media is still on that main thread.
-    <p>Below, there is a side-by-side comparison of two players, one fetching
-    and buffering to its media element solely on the main window context, and
-    the other player relying on a dynamically created dedicated worker to fetch
-    and buffer the same media into a MediaSource owned by that worker's
-    context, yet attached to the main window context's media element via the
-    otherwise normal MediaSource object URL. This demo communicates that URL to
-    the main window context to accomplish the attachment.
-    <p>A scenario where the main thread is under heavy contention is achieved
-    by frequently busy-waiting on it while both players are fetching, buffering
-    and playing. Furthermore, asynchronous appendBuffer operations are
-    performed (on each of the main and worker MSE demos) in small chunks to
-    enable rapid appearance of "buffering jank" on the player being buffered
-    via MSE on the main thread versus a much better experience on the player
-    being buffered via MSE on the worker thread, even if the media stream is
-    short.
-    <p>In practice, main thread (aka Window context) contention can result from
-    many sources, though commonly it is from complex and frequent task
-    execution demands made by the application on the Window execution context,
-    and is made worse when the platform has less execution capacity available.
-    The DOM and associated application javascript operate in the Window
-    execution context. DedicatedWorkers run in a concurrent execution context
-    with respect to the Window execution context. Even with concurrent
-    buffering and smoother playback by using MSE on a dedicated worker context,
-    observe that the video element for the MSE-in-Worker player can still have
-    poor controls response time when the Window context is under high
-    contention. This is because that element (and its controls) can only
-    execute on the Window context and their event handlers can have high
-    scheduling latency.
-    <p>To try in Chromium, use 88.0.4300.0 or greater. As of this demo's
-    creation circa that Chromium version, the "MSE-in-Workers" feature is
-    behind an experimental flag in Chromium. Enable with cmdline option
-    "--enable-experimental-web-platform-features" or navigate to
-    chrome://flags/#enable-experimental-web-platform-features, enable it,
-    relaunch and then reload this demo to see it in action.
-    <p>If the main thread MSE buffering playback is too slow (it might take a
-    long while to render even the first frame on some machines), reduce the
-    amount of contention on the main thread by stopping the demo, selecting a
-    smaller busy-wait duration (to handle other main thread tasks more
-    frequently) or a larger append-size (to do more real buffering work when
-    scheduled), and restarting the demo.
+  <div class="tldr-instructions">
     <p>Use the button, below, to get started.
-    <p>See <a href="https://github.com/wolenetz/mse-in-workers-demo/">the
-      demo's github page for more information.</a> 
+    <p>Demo details are at the <a href="#detailed-description">bottom of this page</a>.
+    <div><b class="supported-status"></b></div>
+    <div class="tldr-if-unsupported">
+     <p>This demo requires a browser which supports MSE-in-Workers.
+     <p>Known-working browsers:
+     <ul>
+       <li>Chromium 88.0.4300.0 or later with chrome://flags/#enable-experimental-web-platform-features enabled.</li>
+     </ul>
+    </div>
   </div>
   <button class="start-stop"></button>
   <div class="top">Loading</div>
@@ -107,5 +70,57 @@
       <br><hr><b>MSE usage in worker thread (video element remains on main thread)</b>
       <div class="player"></div>
     </div>
+  </div>
+  <div class="description">
+    <hr>
+    <a name="detailed-description"></a>
+    <p>
+    <b>Demo details</b>
+    <p>This is a demo of how usage of Media Source Extensions API from a
+    dedicated worker context can avoid "buffering jank" when the main window
+    context is very busy, even though the media element playing the buffered
+    media is still on that main thread.
+    <p>This demo presents a side-by-side comparison of two players, one
+    fetching and buffering to its media element solely on the main window
+    context, and the other player relying on a dynamically created dedicated
+    worker to fetch and buffer the same media into a MediaSource owned by that
+    worker's context, yet attached to the main window context's media element
+    via the otherwise normal MediaSource object URL. This demo communicates
+    that URL to the main window context to accomplish the attachment.
+    <p>A scenario where the main thread is under heavy contention is achieved
+    by frequently busy-waiting on it while both players are fetching, buffering
+    and playing. Furthermore, asynchronous appendBuffer operations are
+    performed (on each of the main and worker MSE demos) in small chunks to
+    enable rapid appearance of "buffering jank" on the player being buffered
+    via MSE on the main thread versus a much better experience on the player
+    being buffered via MSE on the worker thread, even if the media stream is
+    short.
+    <p>In practice, main thread (aka Window context) contention can result from
+    many sources, though commonly it is from complex and frequent task
+    execution demands made by the application on the Window execution context,
+    and is made worse when the platform has less execution capacity available.
+    The DOM and associated application javascript operate in the Window
+    execution context. DedicatedWorkers run in a concurrent execution context
+    with respect to the Window execution context. Even with concurrent
+    buffering and smoother playback by using MSE on a dedicated worker context,
+    observe that the video element for the MSE-in-Worker player can still have
+    poor controls response time when the Window context is under high
+    contention. This is because that element (and its controls) can only
+    execute on the Window context and their event handlers can have high
+    scheduling latency.
+    <p>To try in Chromium, use 88.0.4300.0 or greater. As of this demo's
+    creation circa that Chromium version, the "MSE-in-Workers" feature is
+    behind an experimental flag in Chromium. Enable with cmdline option
+    "--enable-experimental-web-platform-features" or navigate to
+    chrome://flags/#enable-experimental-web-platform-features, enable it,
+    relaunch and then reload this demo to see it in action.
+    <p>If the main thread MSE buffering playback is too slow (it might take a
+    long while to render even the first frame on some machines), reduce the
+    amount of contention on the main thread by stopping the demo, selecting a
+    smaller busy-wait duration (to handle other main thread tasks more
+    frequently) or a larger append-size (to do more real buffering work when
+    scheduled), and restarting the demo.
+    <p>See <a href="https://github.com/wolenetz/mse-in-workers-demo/">the
+      demo's github page for more information.</a>
   </div>
 </body>

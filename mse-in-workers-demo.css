@@ -1,3 +1,6 @@
+div.description {
+  clear: both;
+}
 div.players {
   width: 100%;
 }

@@ -298,7 +298,18 @@ function populateParametersTable() {
   document.querySelector(DEFAULT_BUSYWAIT_DURATION_CLASS_SELECTOR).checked = true;
 }
 
+function checkIfMseInWorkerSupported() {
+  let status_div = document.querySelector("b.supported-status");
+  if (MediaSource && MediaSource.canConstructInDedicatedWorker === true) {
+    status_div.innerText = "";
+    document.querySelector("div.tldr-if-unsupported").innerText = "";  // Remove the tldr text.
+  } else {
+    status_div.innerText = "Error: this browser does not appear to support MSE-in-Workers (MediaSource.canConstructInDedicatedWorker !== true).";
+  }
+}
+
 window.onload = () => {
+  checkIfMseInWorkerSupported();
   button = document.querySelector('.start-stop');
   main_div = document.querySelector('div.main .player');
   worker_div = document.querySelector('div.worker .player');
