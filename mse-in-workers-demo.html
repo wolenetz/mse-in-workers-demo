@@ -16,7 +16,7 @@
      <p>This demo requires a browser which supports MSE-in-Workers.
      <p>Known-working browsers:
      <ul>
-       <li>Chromium 88.0.4300.0 or later with chrome://flags/#enable-experimental-web-platform-features enabled.</li>
+       <li>Chromium 88.0.4300.0 or later started with cmdline option --enable-blink-features=MediaSourceInWorkers, or with chrome://flags/#enable-experimental-web-platform-features enabled.</li>
      </ul>
     </div>
   </div>
@@ -112,9 +112,10 @@
     <p>To try in Chromium, use 88.0.4300.0 or greater. As of this demo's
     creation circa that Chromium version, the "MSE-in-Workers" feature is
     behind an experimental flag in Chromium. Enable with cmdline option
-    "--enable-experimental-web-platform-features" or navigate to
-    chrome://flags/#enable-experimental-web-platform-features, enable it,
-    relaunch and then reload this demo to see it in action.
+    "--enable-blink-features=MediaSourceInWorkers" (preferred way) or navigate
+    to chrome://flags/#enable-experimental-web-platform-features, enable it,
+    relaunch and then reload this demo to see it in action. (The latter way
+    enables other experimental features, too, and is less stable.)
     <p>If the main thread MSE buffering playback is too slow (it might take a
     long while to render even the first frame on some machines), reduce the
     amount of contention on the main thread by stopping the demo, selecting a

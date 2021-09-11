@@ -45,9 +45,14 @@ Demo MSE usage from DedicatedWorker context
 ## Usage
 * Using Chromium 88.0.4300.0 or greater, enable the experimental MSE-in-Workers
   support:
-  * with cmdline option `--enable-experimental-web-platform-features`
+  * with cmdline option `--enable-blink-features=MediaSourceInWorkers`
+    (preferred approach),
   * or enable via `chrome://flags/#enable-experimental-web-platform-features`:
-    select `Enabled` and then `Relaunch`
+    select `Enabled` and then `Relaunch`. (Warning: this latter option enables
+    other experimental features, including `AudioVideoTracks` which is not yet
+    supported with `MediaSourceInWorkers` and would cause sad-tab when querying
+    a worker SourceBuffer's audioTracks or videoTracks, as could happen if you
+    inspect a worker SourceBuffer in this demo using devtools.)
 * Clone this repo and host its contents in a sandbox webserver.
 * Try the demo by navigating to the `mse-in-workers-demo.html` page on your
   server.
