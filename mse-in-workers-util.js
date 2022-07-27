@@ -71,7 +71,13 @@ async function whenSourceOpenedThenFetchAndAppendInChunks(
 
     media_source.addEventListener('sourceopen', () => {
       log_cb('Handling sourceopen event');
-      URL.revokeObjectURL(object_url_to_revoke);
+
+      // Worker MediaSource doesn't use object URLs, so nothing to revoke in
+      // that case.
+      if (object_url_to_revoke != null) {
+        URL.revokeObjectURL(object_url_to_revoke);
+      }
+
       log_cb('Fetching ' + media_url);
       loadBinaryAsync(media_url)
           .then(async media_bytes => {

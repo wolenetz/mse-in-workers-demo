@@ -116,11 +116,11 @@ function startMseBufferingInWorker(log_div, video) {
       // log(log_div, "Received msg from worker: topic=" + msg.data.topic + ",
       // arg=" + msg.data.arg);
       switch (msg.data.topic) {
-        case 'objectUrl':
+        case 'handle':
           log(log_div,
-              'received objectUrl from worker: ' + msg.data.arg +
-                  ', setting video src attr');
-          video.src = msg.data.arg;
+              'received handle message: ' + msg.data.arg +
+                  ', setting video srcObject attr');
+          video.srcObject = msg.data.arg;
           video.play().then(resolve).catch(e => reject(e));
           break;
         case 'info':
@@ -300,11 +300,12 @@ function populateParametersTable() {
 
 function checkIfMseInWorkerSupported() {
   let status_div = document.querySelector("b.supported-status");
-  if (MediaSource && MediaSource.canConstructInDedicatedWorker === true) {
+  if (MediaSource && MediaSource.canConstructInDedicatedWorker === true &&
+      MediaSource.prototype.hasOwnProperty('handle') && MediaSourceHandle) {
     status_div.innerText = "";
     document.querySelector("div.tldr-if-unsupported").innerText = "";  // Remove the tldr text.
   } else {
-    status_div.innerText = "Error: this browser does not appear to support MSE-in-Workers (MediaSource.canConstructInDedicatedWorker !== true).";
+    status_div.innerText = "Error: this browser does not appear to support MSE-in-Workers (MediaSource.canConstructInDedicatedWorker !== true or MediaSource object doesn't have 'handle', or browser is missing either MediaSource or MediaSourceHandle).";
   }
 }
 

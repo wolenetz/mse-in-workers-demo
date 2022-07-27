@@ -16,7 +16,7 @@
      <p>This demo requires a browser which supports MSE-in-Workers.
      <p>Known-working browsers:
      <ul>
-       <li>Chromium 88.0.4300.0 or later started with cmdline option --enable-blink-features=MediaSourceInWorkers, or with chrome://flags/#enable-experimental-web-platform-features enabled.</li>
+       <li>Chromium 105.0.5180.0 or later started with cmdline option <b>--enable-blink-features=MediaSourceInWorkers,MediaSourceInWorkersUsingHandle</b> or with chrome://flags/#enable-experimental-web-platform-features enabled.</li>
      </ul>
     </div>
   </div>
@@ -85,9 +85,9 @@
     fetching and buffering to its media element solely on the main window
     context, and the other player relying on a dynamically created dedicated
     worker to fetch and buffer the same media into a MediaSource owned by that
-    worker's context, yet attached to the main window context's media element
-    via the otherwise normal MediaSource object URL. This demo communicates
-    that URL to the main window context to accomplish the attachment.
+    worker's context, attached to the main window context's media element via a
+    transferred-to-main MediaSourceHandle object set on the media element's
+    srcObject attribute.
     <p>A scenario where the main thread is under heavy contention is achieved
     by frequently busy-waiting on it while both players are fetching, buffering
     and playing. Furthermore, asynchronous appendBuffer operations are
@@ -109,11 +109,16 @@
     contention. This is because that element (and its controls) can only
     execute on the Window context and their event handlers can have high
     scheduling latency.
-    <p>To try in Chromium, use 88.0.4300.0 or greater. As of this demo's
-    creation circa that Chromium version, the "MSE-in-Workers" feature is
-    behind an experimental flag in Chromium. Enable with cmdline option
-    "--enable-blink-features=MediaSourceInWorkers" (preferred way) or navigate
-    to chrome://flags/#enable-experimental-web-platform-features, enable it,
+    <p>To try in Chromium, use 105.0.5180.0 or greater (earlier versions since
+    88.0.4300.0 supported worker MediaSource attachment using legacy object
+    URLs, but that functionality has been removed from both the implementation
+    and specification, when using the prescribed feature flags, below). As of
+    this demo's update circa that Chromium version, the "MSE-in-Workers"
+    feature is behind an experimental flag in Chromium. Enable with cmdline
+    option
+    "--enable-blink-features=MediaSourceInWorkers,MediaSourceInWorkersUsingHandle"
+    (preferred way) or navigate to
+    chrome://flags/#enable-experimental-web-platform-features, enable it,
     relaunch and then reload this demo to see it in action. (The latter way
     enables other experimental features, too, and is less stable.)
     <p>If the main thread MSE buffering playback is too slow (it might take a

@@ -18,10 +18,9 @@ Demo MSE usage from DedicatedWorker context
 * Presents a side-by-side comparison of two players, one fetching and buffering
   to its media element solely on the main window context, and the other player
   relying on a dynamically created dedicated worker to fetch and buffer the same
-  media into a MediaSource owned by that worker's context, yet attached to the
-  main window context's media element via the otherwise normal MediaSource
-  object URL. This demo communicates that URL to the main window context to
-  accomplish the attachment.
+  media into a MediaSource owned by that worker's context, attached to the
+  main window context's media element via a transferred-to-main
+  MediaSourceHandle object set on the media element's srcObject attribute.
 * A scenario where the main thread is under heavy contention is achieved by
   frequently busy-waiting on it while both players are fetching, buffering and
   playing. Furthermore, asynchronous appendBuffer operations are performed (on
@@ -43,9 +42,10 @@ Demo MSE usage from DedicatedWorker context
   have high scheduling latency.
 
 ## Usage
-* Using Chromium 88.0.4300.0 or greater, enable the experimental MSE-in-Workers
+* Using Chromium 105.0.5180.0 or greater, enable the experimental MSE-in-Workers
   support:
-  * with cmdline option `--enable-blink-features=MediaSourceInWorkers`
+  * with cmdline option enabling the two required features:
+    `--enable-blink-features=MediaSourceInWorkers,MediaSourceInWorkersUsingHandle`
     (preferred approach),
   * or enable via `chrome://flags/#enable-experimental-web-platform-features`:
     select `Enabled` and then `Relaunch`. (Warning: this latter option enables
@@ -61,3 +61,12 @@ Demo MSE usage from DedicatedWorker context
 Created `test-5seconds.webm` using the following:
 
 `ffmpeg -f lavfi -i testsrc=duration=5:size=1920x1080:rate=30 test-5seconds.webm`
+
+## Update History
+
+* July 27, 2022: Updated to use transferred `MediaSourceHandle` set on
+  `srcObject` for worker `MediaSource` attachment, replacing legacy object URL
+  attachment that is no longer supported in specification for Dedicated Worker
+  MediaSource object attachments to main thread media elements. Previous
+  approach using legacy object URLs for attachment was used by the demo for
+  Chromium versions beginning 88.0.4300.0 and ending 105.0.5180.0.

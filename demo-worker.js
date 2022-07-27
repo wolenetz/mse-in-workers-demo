@@ -19,18 +19,18 @@ onmessage = (e) => {
       'media_url=' + media_url + ', media_type=' + media_type +
       ',append_size=' + append_size);
   let media_source = new MediaSource();
-  let object_url = URL.createObjectURL(media_source);
+  let handle = media_source.handle;
 
-  // Send the MediaSource objectURL to the main thread for use in attaching to
+  // Transfer the MediaSourceHandle to the main thread for use in attaching to
   // the main thread media element that will play the content being buffered
   // here in the worker.
-  postMessage({topic: 'objectUrl', arg: object_url});
+  postMessage({topic: 'handle', arg: handle}, [handle]);
 
   // Install the sourceopen handler, fetch the media, create a
   // SourceBuffer, and buffer the media into it in tiny chunks.
   whenSourceOpenedThenFetchAndAppendInChunks(
       media_source, media_url, media_type, append_size,
-      object_url /* sourceopen handler in utility script will revoke this url */
+      null /* sourceopen handler in utility script will not need to revoke an object URL */
       ,
       logmsg => {
         logToMain(logmsg);
