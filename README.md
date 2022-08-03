@@ -42,8 +42,11 @@ Demo MSE usage from DedicatedWorker context
   have high scheduling latency.
 
 ## Usage
-* Using Chromium 105.0.5180.0 or greater, enable the experimental MSE-in-Workers
-  support:
+* If using Chrome 106.0.5214.0 or greater, the feature is enabled by default.
+* If using Chrome 105.0.5195.18 or greater in the 105 milestone, the feature is
+  enabled by default.
+* If using Chrome 105.0.5180.0 through 105.0.5195.17, enable the experimental
+  MSE-in-Workers support:
   * with cmdline option enabling the two required features:
     `--enable-blink-features=MediaSourceInWorkers,MediaSourceInWorkersUsingHandle`
     (preferred approach),
@@ -70,3 +73,5 @@ Created `test-5seconds.webm` using the following:
   MediaSource object attachments to main thread media elements. Previous
   approach using legacy object URLs for attachment was used by the demo for
   Chromium versions beginning 88.0.4300.0 and ending 105.0.5180.0.
+* Aug 2, 2022: Updated to indicate the first Chrome versions having this feature
+  enabled by default.

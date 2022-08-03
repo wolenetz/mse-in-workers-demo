@@ -16,7 +16,10 @@
      <p>This demo requires a browser which supports MSE-in-Workers.
      <p>Known-working browsers:
      <ul>
-       <li>Chromium 105.0.5180.0 or later started with cmdline option <b>--enable-blink-features=MediaSourceInWorkers,MediaSourceInWorkersUsingHandle</b> or with chrome://flags/#enable-experimental-web-platform-features enabled.</li>
+       <li>Chrome 105.0.5195.18 or greater in the 105 milestoner: the feature is enabled by default.</li>
+       <li>Chrome 106.0.5214.0 or greater: the feature is enabled by default.</li>
+       <li>Chrome 105.0.5180.0 through 105.0.5195.17: enable this feature by starting with cmdline option <b>--enable-blink-features=MediaSourceInWorkers,MediaSourceInWorkersUsingHandle</b> or with chrome://flags/#enable-experimental-web-platform-features enabled.</li>
+       <li>Note: previous Chrome versions supported MSE-in-Workers experimentally using object URL for worker MediaSource attachment, not a MediaSourceHandle, but this demo has been updated to only work using MediaSourceHandle.</li>
      </ul>
     </div>
   </div>
@@ -109,18 +112,19 @@
     contention. This is because that element (and its controls) can only
     execute on the Window context and their event handlers can have high
     scheduling latency.
-    <p>To try in Chromium, use 105.0.5180.0 or greater (earlier versions since
-    88.0.4300.0 supported worker MediaSource attachment using legacy object
-    URLs, but that functionality has been removed from both the implementation
-    and specification, when using the prescribed feature flags, below). As of
-    this demo's update circa that Chromium version, the "MSE-in-Workers"
-    feature is behind an experimental flag in Chromium. Enable with cmdline
-    option
-    "--enable-blink-features=MediaSourceInWorkers,MediaSourceInWorkersUsingHandle"
-    (preferred way) or navigate to
-    chrome://flags/#enable-experimental-web-platform-features, enable it,
-    relaunch and then reload this demo to see it in action. (The latter way
-    enables other experimental features, too, and is less stable.)
+    <p>To try in Chrome, use 105.0.5180.0 or greater (earlier versions since
+    88.0.4300.0 experimentally supported worker MediaSource attachment using
+    legacy object URLs, but that functionality has been removed from both the
+    implementation and specification).
+    <ul>
+      <li>Chrome 105.0.5195.18 or greater in the 105 milestoner: the feature is enabled by default.</li>
+      <li>Chrome 106.0.5214.0 or greater: the feature is enabled by default.</li>
+      <li>Chrome 105.0.5180.0 through 105.0.5195.17: enable this feature by
+        starting with cmdline option
+        <b>--enable-blink-features=MediaSourceInWorkers,MediaSourceInWorkersUsingHandle</b>
+      (preferred way) or with
+      chrome://flags/#enable-experimental-web-platform-features enabled.</li>
+    </ul></p>
     <p>If the main thread MSE buffering playback is too slow (it might take a
     long while to render even the first frame on some machines), reduce the
     amount of contention on the main thread by stopping the demo, selecting a
