@@ -190,9 +190,8 @@ function startDemoPlayer(div, use_worker) {
     return;
   }
 
-  if (use_worker &&
-      (!MediaSource.hasOwnProperty('canConstructInDedicatedWorker') ||
-       MediaSource.canConstructInDedicatedWorker !== true)) {
+  if (use_worker && (!MediaSource.hasOwnProperty('canConstructInDedicatedWorker') ||
+                     MediaSource.canConstructInDedicatedWorker !== true)) {
     log(log_div,
         'Error: MediaSource API is unavailable from DedicatedWorker context.');
     decrementPendingEnded();
@@ -300,12 +299,11 @@ function populateParametersTable() {
 
 function checkIfMseInWorkerSupported() {
   let status_div = document.querySelector("b.supported-status");
-  if (MediaSource && MediaSource.canConstructInDedicatedWorker === true &&
-      MediaSource.prototype.hasOwnProperty('handle') && MediaSourceHandle) {
+  if (MediaSource && MediaSource.canConstructInDedicatedWorker === true && MediaSourceHandle) {
     status_div.innerText = "";
     document.querySelector("div.tldr-if-unsupported").innerText = "";  // Remove the tldr text.
   } else {
-    status_div.innerText = "Error: this browser does not appear to support MSE-in-Workers (MediaSource.canConstructInDedicatedWorker !== true or MediaSource object doesn't have 'handle', or browser is missing either MediaSource or MediaSourceHandle).";
+    status_div.innerText = "Error: this browser does not appear to support MSE-in-Workers (MediaSource.canConstructInDedicatedWorker !== true or browser is missing either MediaSource or MediaSourceHandle).";
   }
 }
 
