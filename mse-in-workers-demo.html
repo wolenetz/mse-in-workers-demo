@@ -16,8 +16,15 @@
      <p>This demo requires a browser which supports MSE-in-Workers.
      <p>Known-working browsers:
      <ul>
-       <li>Chrome 105.0.5180.0 through 107: enable this feature by starting with cmdline option <b>--enable-blink-features=MediaSourceInWorkers,MediaSourceInWorkersUsingHandle</b> or with chrome://flags/#enable-experimental-web-platform-features enabled.</li>
-       <li>Note: previous Chrome versions supported MSE-in-Workers experimentally using object URL for worker MediaSource attachment, not a MediaSourceHandle, but this demo has been updated to only work using MediaSourceHandle.</li>
+       <li>Chrome has MSE-in-Workers enabled by default beginning with version 108.0.5334.0.</li>
+       <li>Chrome 105.0.5180.0 through 108.0.5333.0: enable this feature by
+         starting with cmdline option
+         <b>--enable-blink-features=MediaSourceInWorkers,MediaSourceInWorkersUsingHandle</b>
+         or with chrome://flags/#enable-experimental-web-platform-features enabled.</li>
+       <li>Note: previous Chrome versions supported MSE-in-Workers
+         experimentally using object URL for worker MediaSource attachment, not
+         a MediaSourceHandle, but this demo has been updated to only work using
+         MediaSourceHandle.</li>
      </ul>
     </div>
   </div>
@@ -115,7 +122,9 @@
     legacy object URLs, but that functionality has been removed from both the
     implementation and specification).
     <ul>
-      <li>Chrome 105.0.5180.0 through 107: enable this feature by
+      <li>Chrome has MSE-in-Workers enabled by default beginning with version
+        108.0.5334.0.</li>
+      <li>Chrome 105.0.5180.0 through 108.0.5333.0: enable this feature by
         starting with cmdline option
         <b>--enable-blink-features=MediaSourceInWorkers,MediaSourceInWorkersUsingHandle</b>
       (preferred way) or with
