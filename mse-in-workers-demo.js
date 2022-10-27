@@ -18,6 +18,9 @@ let worker;
 let main_video_tag;
 let worker_video_tag;
 
+// Render timing for log messages
+let initial_time = null;
+
 // Radio buttons update these parameters for the next demo start. Their default
 // selections are set in onload()'s call to populateParametersTable(). Their
 // current values are fetched and used at the beginning of
@@ -58,8 +61,16 @@ function stopBusyWaiting() {
 }
 
 function log(log_div, entry) {
+  let time_millis = null;
+  if (initial_time !== null) {
+    time_millis = Date.now() - initial_time;
+  } else {
+    time_millis = 0;
+    initial_time = Date.now();
+  }
+
   let span = document.createElement('span');
-  span.innerHTML = entry + '<br>';
+  span.innerHTML = `${time_millis}ms : ${entry}<br>`;
   log_div.appendChild(span);
 }
 
