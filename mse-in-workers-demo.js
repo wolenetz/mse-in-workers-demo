@@ -1,6 +1,6 @@
 // Customize the demo media here:
-const MEDIA_URL = 'test-5seconds.webm';
-const MEDIA_TYPE = 'video/webm; codecs="vp9"';
+const MEDIA_URL = 'test-5seconds.mp4';
+const MEDIA_TYPE = 'video/mp4; codecs="avc1.640028"';
 const DEFAULT_APPEND_SIZE_CLASS_SELECTOR = '.append-512';
 const DEFAULT_BUSYWAIT_DURATION_CLASS_SELECTOR = '.busywait-800';
 // End of demo customization.

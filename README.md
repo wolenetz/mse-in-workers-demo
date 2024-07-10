@@ -60,12 +60,14 @@ Demo MSE usage from DedicatedWorker context
   server.
 
 ## Test Media
-Created `test-5seconds.webm` using the following:
+Created `test-5seconds.mp4` using the following:
 
-`ffmpeg -f lavfi -i testsrc=duration=5:size=1920x1080:rate=30 test-5seconds.webm`
+`ffmpeg -f lavfi -i testsrc=size=1920x1080:rate=30 -c:v libx264 -profile:v high -pix_fmt yuv420p -t 5 -f mp4 -movflags frag_keyframe+empty_moov+default_base_moof test-5seconds.mp4`
 
 ## Update History
 
+* July 10, 2024: The test media changed from VP9 in webm to H.264 in fmp4 in
+  order to be compatible with Safari.
 * July 27, 2022: Updated to use transferred `MediaSourceHandle` set on
   `srcObject` for worker `MediaSource` attachment, replacing legacy object URL
   attachment that is no longer supported in specification for Dedicated Worker
